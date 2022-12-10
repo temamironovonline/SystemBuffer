@@ -11,9 +11,9 @@ void ClipboardDigits();
 int main()
 {
 	LPWSTR buffer = L"Hello, world";
-	//ClipboardInputText(buffer);
-	//ClipboardProhibitionOutputText();
-	//ClipboardProhibitionOutputText();
+	/*lipboardInputText(buffer);
+	ClipboardOutputText();
+	ClipboardProhibitionOutputText();*/
 	ClipboardDigits();
 
 }
@@ -23,9 +23,8 @@ void ClipboardInputText(LPWSTR forTextBuffer)
 	DWORD len;
 	HANDLE hMem;
 	len = wcslen(forTextBuffer) + 1;
-
-	hMem = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(WCHAR));
-	memcpy(GlobalLock(hMem), forTextBuffer, len * sizeof(WCHAR));
+	hMem = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(LPWSTR));
+	memcpy(GlobalLock(hMem), forTextBuffer, len * sizeof(LPWSTR*));
 	GlobalUnlock(hMem);
 	OpenClipboard(NULL);
 	EmptyClipboard();
@@ -36,21 +35,22 @@ void ClipboardInputText(LPWSTR forTextBuffer)
 
 LPWSTR ClipboardOutputText()
 {
-	LPWSTR message;
+	LPWSTR* message;
 	OpenClipboard(NULL);
 	HANDLE hClipboardData = GetClipboardData(CF_UNICODETEXT);
-	message = (LPWSTR)GlobalLock(hClipboardData);
+	message = (char*)GlobalLock(hClipboardData);
 	GlobalUnlock(hClipboardData);
-	CloseClipboard(hClipboardData);
+	CloseClipboard();
 	return message;
 }
+
 
 
 void ClipboardProhibitionOutputText()
 {
 	while (TRUE)
 	{
-		LPWSTR buffer = ClipboardOutputText();
+		char* buffer = ClipboardOutputText();
 
 		if (*buffer != 0)
 		{
@@ -63,65 +63,73 @@ void ClipboardProhibitionOutputText()
 
 void ClipboardDigits()
 {
-	LPWSTR buffer = ClipboardOutputText();
+	LPWSTR buffer;
+	buffer = calloc(100, sizeof(LPWSTR));
+	buffer = ClipboardOutputText();
 	BOOL check = FALSE;
+	LPWSTR* arraySymbols;
+	LPWSTR symbolsDigit;
+	int check1 = 0;
+	symbolsDigit = calloc(7, sizeof(LPWSTR));
+
 	for (int i = 0; buffer[i] != '\0'; i++)
 	{
 		if (isdigit(buffer[i]) != 0)
 		{
-			LPWSTR symbolsDigit;
-			symbolsDigit = calloc(7, sizeof(WCHAR));
+			check++;
+		}
+	}
 
-			int digit = atoi(buffer);
-			check = TRUE;
+	check = TRUE;
+	arraySymbols = calloc(check, sizeof(LPWSTR));
+
+	for (int i = 0; i < check; i++)
+	{
+		arraySymbols[check] = calloc(10, sizeof(WCHAR));
+	}
+
+	int a = 0;
+	for (int i = 0; buffer[i] != '\0'; i++)
+	{
+		if (isdigit(buffer[i]) != 0)
+		{
+			int digit = buffer[i]-'0';
 			switch (digit)
 			{
 				case 0:
-					symbolsDigit = L"ноль";
+					arraySymbols[a,0] = L"ноль";
 					break;
 				case 1:
-					symbolsDigit = L"один";
+					arraySymbols[a,0] = L"один";
 					break;
 				case 2:
-					symbolsDigit = L"два";
+					arraySymbols[a,0] = L"два";
 					break;
 				case 3:
-					symbolsDigit = L"три";
+					arraySymbols[a,0] = L"три";
 					break;
 				case 4:
-					symbolsDigit = L"четыре";
+					arraySymbols[a,0] = L"четыре";
 					break;
 				case 5:
-					symbolsDigit = L"пять";
+					arraySymbols[a,0] = L"пять";
 					break;
 				case 6:
-					symbolsDigit = L"шесть";
+					arraySymbols[a,0] = L"шесть";
 					break;
 				case 7:
-					symbolsDigit = L"семь";
+					arraySymbols[a,0] = L"семь";
 					break;
 				case 8:
-					symbolsDigit = L"восемь";
+					arraySymbols[a,0] = L"восемь";
 					break;
 				case 9:
-					symbolsDigit = L"девять";
+					arraySymbols[a,0] = L"девять";
 					break;
-			}
-			swprintf(buffer, 15, L"%d - %s", digit, symbolsDigit);
+				}
+			MessageBox(NULL, arraySymbols[a, 0], L"awd", MB_OK);
+			a++;
 		}
-		if (check)
-		{
-			break;
-		}
-			
-	}
-	if (check)
-	{
-		MessageBox(NULL, buffer, L"Текст после замены", MB_OK);
-
-	}
-	else
-	{
-		MessageBox(NULL, buffer, L"Цифр не обнаружено", MB_OK);
+		
 	}
 }
